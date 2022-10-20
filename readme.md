@@ -201,7 +201,7 @@
 
 `userSchema.pre("save", async function (next) { this.password = await bcrypt.hash(this.password, 10); }); `
 
-- The code hashs the password before it saved in db, 10 is the level of complexity, the big number we have, the higher compleier, 10 is standard
+- The code hashs the password before it saved in db, 10 is the level of complexity, the higher number we use, the more complex to break, 10 is standard
 - The password is hashed If we see it in the database or postman
 
 # JWT-Json-Web-Token
@@ -229,7 +229,7 @@
 - First create a login method in authController called => loginUser
 - Make sure email & passw is entered also check if they are valid
 - Check email is in db - Also check password is valid by compare method inbuilt in jwt
-- Remember that we have password:{select:false}, in user model, means we dont show raw password in db, so how we check the password is correct or not if its now shown in db ?.
+- Remember that we have password:{select:false}, in user model, means we dont show raw password in db, so how we check the password is correct or not if its not shown in db ?.
 - There is a method called 'select' in mongoose, that selects password indirectly
   `const user = await User.findOne({ email }).select("+password");`
   in 'authController'
