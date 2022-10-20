@@ -1,4 +1,4 @@
-# Some code Instructions
+# Things learned from this project
 
 - Slug will be generated from package
 
