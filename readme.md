@@ -233,14 +233,14 @@
 - There is a method called 'select' in mongoose, that selects password indirectly
   `const user = await User.findOne({ email }).select("+password");`
   in 'authController'
-- The compare method from JWT, inside user model 'll hwlp to check the password is existed
+- The compare method from JWT, inside user model 'll help to check if the password is existed already
   `userSchema.methods.comparePassword = async function (enteredPassword) { return await bcrypt.compare(enteredPassword, this.password); };`
 - What the above code does is, first pass the enterPassword by the user using the route, then compares with password in db(this.password) using compare method from bcrypt.Which returns true if its ok otherwise false if password is not equal.
 - Next we check the password in the "authController" using the method we have created above, sth like this
 
   ` const isPasswordMatched = await user.comparePassword(password); if (!isPasswordMatched) { return next(new ErrorHandler("Invalid Email or Password"), 401); }`
 
-- Finally Create JWT Token, to attch the token with the login crediantials and make a post request.
+- Finally Create JWT Token, to attach the token with the login crediantials and make a post request.
 
 ```//Create JWT Token
   const token = user.getJwtToken();
