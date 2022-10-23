@@ -1,4 +1,4 @@
-# Some code Instructions
+# Things learned from this project
 
 - Slug will be generated from package
 
@@ -205,7 +205,7 @@
 
 `userSchema.pre("save", async function (next) { this.password = await bcrypt.hash(this.password, 10); }); `
 
-- The code hashs the password before it saved in db, 10 is the level of complexity, the big number we have, the higher compleier, 10 is standard
+- The code hashs the password before it saved in db, 10 is the level of complexity, the higher number we use, the more complex to break, 10 is standard
 - The password is hashed If we see it in the database or postman
 
 # JWT-Json-Web-Token
@@ -233,18 +233,18 @@
 - First create a login method in authController called => loginUser
 - Make sure email & passw is entered also check if they are valid
 - Check email is in db - Also check password is valid by compare method inbuilt in jwt
-- Remember that we have password:{select:false}, in user model, means we dont show raw password in db, so how we check the password is correct or not if its now shown in db ?.
+- Remember that we have password:{select:false}, in user model, means we dont show raw password in db, so how we check the password is correct or not if its not shown in db ?.
 - There is a method called 'select' in mongoose, that selects password indirectly
   `const user = await User.findOne({ email }).select("+password");`
   in 'authController'
-- The compare method from JWT, inside user model 'll hwlp to check the password is existed
+- The compare method from JWT, inside user model 'll help to check if the password is existed already
   `userSchema.methods.comparePassword = async function (enteredPassword) { return await bcrypt.compare(enteredPassword, this.password); };`
 - What the above code does is, first pass the enterPassword by the user using the route, then compares with password in db(this.password) using compare method from bcrypt.Which returns true if its ok otherwise false if password is not equal.
 - Next we check the password in the "authController" using the method we have created above, sth like this
 
   ` const isPasswordMatched = await user.comparePassword(password); if (!isPasswordMatched) { return next(new ErrorHandler("Invalid Email or Password"), 401); }`
 
-- Finally Create JWT Token, to attch the token with the login crediantials and make a post request.
+- Finally Create JWT Token, to attach the token with the login crediantials and make a post request.
 
 ```//Create JWT Token
   const token = user.getJwtToken();
