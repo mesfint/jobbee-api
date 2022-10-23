@@ -181,6 +181,10 @@
 
 ## Authentication & Authorization USER
 
+#### Nice blog article about JWT
+
+      https://flaviocopes.com/jwt/
+
 - First we created user model, name, email,password and role
 - We don't have admin role in user model==> we don't want user to create admin from UI
 - If we want admin we can create admin from db
@@ -250,3 +254,74 @@
     token,
   });
 ```
+
+# Saving token in cookie =>httpOnly cookie
+
+- According to the article https://flaviocopes.com/jwt/, saving token in Local storage is not good Idea for security reason.
+- Rather tokens shold be saved in HttpOnly cookies
+- Because, An HttpOnly cookie is not accessible from JavaScript, and is automatically sent to the origin server upon every request,
+  //so it perfect suits to our use case.
+- The httpOnlt cookie is implementted in /utils/jwtToken
+- W/c also reduces code rededency by creating tokens only from this file and send it to others, Then import it in authController
+  ` sendToken(user, 200, res);`
+
+## Testing the token is saved in httpOnly cookie
+
+- In Postman run
+  `{{DOMAIN}}/api/v1/login`
+- Make sure the email and password is correct, Then open the response panel down in the Postman, and check the body
+  shold be something like this
+
+```{
+    "success": true,
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzNTQzMDBmYmZhNjI1ZTc3Y2JiN2EwMSIsImlhdCI6MTY2NjQ2MTgzOCwiZXhwIjoxNjY3MDY2NjM4fQ.PxCd3N_uZZQBOYBcwJSzE7CTEijjN1Ue6fz2H4ZqopM"
+}
+```
+
+. Also check the cookies tab, where you will find name of token, value, expire date and the security status =>true/false, In our case its false , so we need to fix this to make it true so that Its more secured.some thing like this in jwtToken
+
+```
+  if (process.env.NODE_ENV === "production") {
+    options.secure = true;
+  }
+```
+
+# Protect Routes
+
+### Protect Route means :
+
+- only authorized user can access that route
+
+## How to Authorize a user
+
+Steps
+
+1.  For example we need a user to be authorized to create an job post, check {{DOMAIN}}/api/v1/job/new in POSTMAN
+2.  In the Header tab section make sure we have Authorization as key and "Bearer token", notice space between Bearer and token
+3.  The "Bearer" is a must.
+4.  Create auth.js file in middlewares, In this file we will do the following
+
+- Check if the user is authenticated or not, To check wethera user is authorized or not we do check if the token is existed or not, if there is token user is authorized otherwise not.We get the token by spliting from "Bearer" and save the second part with is the token inro a variable
+- If that token is existed then we have to verify with jwt.verify object
+- The verify Object take, token and the secret value
+- If its verified then we get the user from ID and save it in req.user, so that we can access it from any where in the app.
+
+## Using Authenticate middleware to authorize users
+
+- In otherwords we are protecting routes
+- Go to Jobs routes => /routes/jobs.js
+- Import `const { isAuthenticatedUser } = require("../middlewares/auth");`
+- Then wrap create new job route like this
+  `router.route("/job/new").post(isAuthenticatedUser, newJob);`
+- Test create new job route from POSTMAN,while you do that first make sure you are loged in, then , copy the token from the login session then
+- Move on to the createnew job route in POSTMAN,in header tab change the "token" text with the token, and try to create a new job post, It must be SUCCESSFULL
+
+# Saving Token id in POSTMAN
+
+- The reason why we save it is to avoid to copy and paste again and again in the header.
+  Steps
+- While you are in the login end point, open "Tests" tab and type the following script
+  `pm.environment.set("token",pm.response.json().token)`
+- pm=> postman and then save it
+- To use it in create new job while you are in create/new job route
+- Go to Authorization tab then select "Bearer token" option that is it
