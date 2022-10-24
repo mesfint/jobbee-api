@@ -1,4 +1,5 @@
 # Things learned from this project
+####  (personal note)
 
 - Slug will be generated from package
 
