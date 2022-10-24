@@ -12,7 +12,7 @@ const {
   jobStats,
 } = require("../controllers/jobs");
 
-const { isAuthenticatedUser } = require("../middlewares/auth");
+const { isAuthenticatedUser, authorizeRoles } = require("../middlewares/auth");
 
 //Import Jobs Controller methods
 
@@ -22,9 +22,15 @@ router.route("/job/:id/:slug").get(getJob);
 router.route("/stats/:topic").get(jobStats);
 
 //Only the employers can create a job
-router.route("/job/new").post(isAuthenticatedUser, newJob);
+router
+  .route("/job/new")
+  .post(isAuthenticatedUser, authorizeRoles("employer", "admin"), newJob);
 
-router.route("/job/:id").put(isAuthenticatedUser, updateJob);
-router.route("/job/:id").delete(isAuthenticatedUser, deleteJob);
+router
+  .route("/job/:id")
+  .put(isAuthenticatedUser, authorizeRoles("employer", "admin"), updateJob);
+router
+  .route("/job/:id")
+  .delete(isAuthenticatedUser, authorizeRoles("employer", "admin"), deleteJob);
 
 module.exports = router;

@@ -25,7 +25,7 @@ exports.getJobs = catchAsyncErrors(async (req, res, next) => {
 // Create a new Job   =>  /api/v1/job/new
 exports.newJob = catchAsyncErrors(async (req, res, next) => {
   // Adding user to body
-  req.body.user = req.user.id;
+  req.body.user = req.user.id; //This 'll give us the current loggedIn user Id
 
   const job = await Job.create(req.body);
 
