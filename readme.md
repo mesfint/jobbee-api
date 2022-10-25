@@ -1,5 +1,6 @@
 # Things learned from this project
-####  (personal note)
+
+#### (personal note)
 
 - Slug will be generated from package
 
@@ -297,14 +298,14 @@
 
 Steps
 
-1.  For example we need a user to be authorized to create an job post, check {{DOMAIN}}/api/v1/job/new in POSTMAN
-2.  In the Header tab section make sure we have Authorization as key and "Bearer token", notice space between Bearer and token
-3.  The "Bearer" is a must.
+1.  For example we need a user to be authorized to create a job post, check {{DOMAIN}}/api/v1/job/new in POSTMAN
+2.  In the Header tab section make sure we have Authorization as key and "Bearer token" as a value, notice space between Bearer and token
+3.  The "Bearer" text is a must.
 4.  Create auth.js file in middlewares, In this file we will do the following
 
-- Check if the user is authenticated or not, To check wethera user is authorized or not we do check if the token is existed or not, if there is token user is authorized otherwise not.We get the token by spliting from "Bearer" and save the second part with is the token inro a variable
+- Check if the user is authenticated or not, To check wether a user is authorized or not we do check if the token is existed or not, if there is token user is authorized otherwise not.We get the token by spliting from "Bearer" and save the second part with is the token into a variable
 - If that token is existed then we have to verify with jwt.verify object
-- The verify Object take, token and the secret value
+- The verify Object takes, token and the secret value
 - If its verified then we get the user from ID and save it in req.user, so that we can access it from any where in the app.
 
 ## Using Authenticate middleware to authorize users
@@ -312,15 +313,18 @@ Steps
 - In otherwords we are protecting routes
 - Go to Jobs routes => /routes/jobs.js
 - Import `const { isAuthenticatedUser } = require("../middlewares/auth");`
-- Then wrap create new job route like this
+- Then update the create new job route like this
   `router.route("/job/new").post(isAuthenticatedUser, newJob);`
-- Test create new job route from POSTMAN,while you do that first make sure you are loged in, then , copy the token from the login session then
-- Move on to the createnew job route in POSTMAN,in header tab change the "token" text with the token, and try to create a new job post, It must be SUCCESSFULL
+- Test by creating new job route from POSTMAN,while you do that first make sure you are loged in, then , copy the token from the logged in session then
+- Move on to the createnew job route in POSTMAN,in header tab change the "token" text with the actual token you copied, and try to create a new job post, It must be SUCCESSFULL
+- This indicates only a certain group of people[employer,admin] can create new job post
 
 # Saving Token id in POSTMAN
 
 - The reason why we save it is to avoid to copy and paste again and again in the header.
+
   Steps
+
 - While you are in the login end point, open "Tests" tab and type the following script
   `pm.environment.set("token",pm.response.json().token)`
 - pm=> postman and then save it
@@ -330,7 +334,7 @@ Steps
 # Handling users roles
 
 - Users in this app are [user,employer,admin]
-- users can register and login, to do more stuffs, they must have at least employer role.
+- users are a default role and can register and login, to do more stuffs, they must have at least employer role.
 - user with employer role can creat , edit and delete job posts
 
 ### Authorize Roles
@@ -355,13 +359,13 @@ exports.authorizeRoles = (...roles) => {
 
 - The function has all roles
 - Checks that the roles are included in the user
-- if the user has a predefined role, then its allowed to access th eresources
+- if the user has a predefined role, then its allowed to access the resources
 - Otherwise, its denied or need to login
 
 # Import the Authorize roles into Jobs routes
 
 - First , import authorizeRoles into the jobs routes
-- Then, add it to the routes such as, create,edit and delete jobs
+- Then, add it to the routes such as, create,edit and delete operations
 
 ```
 router
@@ -384,14 +388,14 @@ router
 });
 ```
 
-- This will make a relation with job
+- This relationship can be concidered as one to one or many to one
 
 # Testing Roles
 
 - Create a user with a role of employer
 - Then, login
 - Create a new job
-- By now the job should have a user id included, This tell us their association, and this specific job was created by this user, so that we can check that we have the same user Id in user collection as well.
+- By now the job should have a user id included, This tell us the association, and this specific job was created by this user, so that we can check that we have the same user Id in user collection as well.
 
 # Generate Password Reset Token for Forgot password
 
