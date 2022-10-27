@@ -15,7 +15,7 @@ const sendToken = (user, statusCode, res) => {
     ), //The cookie will expires after 7days
     httpOnly: true,
   };
-  //To make the token cookie more secured
+  //To make the token cookie more secured, see in in Postman true/false
 
   /*if (process.env.NODE_ENV === "production") {
     options.secure = true;

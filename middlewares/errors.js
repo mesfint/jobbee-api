@@ -79,7 +79,7 @@ module.exports = (err, req, res, next) => {
 
     // Handle mongoose duplicate key error
     //Handle mongoose duplicate key error, this error happened if we try to recreate an existing user email
-    //These key values are coming from postmen error message object=> err.keyValue is the email we try to enter twice
+    //These key values are coming from postman error message object=> err.keyValue is the email we try to enter twice
     if (err.code === 11000) {
       const message = `Duplicate ${Object.keys(err.keyValue)} entered.`;
       error = new ErrorHandler(message, 400);

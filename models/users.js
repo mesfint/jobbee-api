@@ -25,7 +25,7 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: [true, "Please enter your password for your account"],
+    required: [true, "Please enter password for your account"],
     minlength: [8, "Your password must be at least 8 characters long"],
     select: false,
   },
@@ -59,7 +59,7 @@ userSchema.methods.comparePassword = async function (enteredPassword) {
 
 //Generate Password Reset Token
 
-userSchema.methods.getResetPassordToken = function () {
+userSchema.methods.getResetPasswordToken = function () {
   //Generate Token
   const resetToken = crypto.randomBytes(20).toString("hex");
 
