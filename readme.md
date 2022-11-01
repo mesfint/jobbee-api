@@ -498,6 +498,18 @@ const resetPasswordToken = crypto
 
 ```
 
+# Testing forgot and reset password via POSTMAN with mailtrap
+
+We are Using a fake email third party package mailtrap, where we recieve our reset token, instead of our personal email client.Provided all the configuration is done above.
+
+    Steps:
+
+    1.Make a forgot password request
+
+![alt text](forgot.png) 2. Check mailtrap, Received email message with a link to reset password
+![alt text](mailtrap.png) 3. Copy the above link and past it in POSTMAN, so that the password is updated/changed
+![alt text](reset.png) 4. Now can try to login with the new password...That is it
+
 # Handling Wrong JWT Token & Expire JWT Error
 
 Errors in production stage can happen due to various reasons
@@ -538,3 +550,60 @@ Displaying a logged In user profile is very essential tasks in Fullstack dev.
 3.  To display the User profile first make sure the user is logged in, then while you are in /api/v1/me route in POSTMAN,get the Bearer Token set like below
     ![alt text](token.png)
 4.  Make {{DOMAIN}}/api/v1/me get request, the user profile should be there
+
+# Update current user Password
+
+=> /api/v1/password/update
+
+Currently logged In user can update its password
+
+    Steps:
+
+    1.  In userController, create a  new method updatePassword,
+        - Since password is not displaied in our db, b/c its select:false, we have to find the users with password and Id, we have to select also the password like this:
+
+`const user = await User.findById(req.user.id).select("+password");`
+
+    2.  Check previous user password
+        - The previous password can be checked using comparePassword , method from mongoose and pass the existing password to it.
+        - NB. comparePassword is implemented in users model
+    3.  If the old password is checked and confirmed, then we update with the new one like this.
+
+` user.password = req.body.newPassword;`
+
+    4.  Finally save it into db.
+
+# Update User Data/Current User Data
+
+Users can only update their name and email, nothing else
+
+    Steps:
+    1.  Create a method updateUser inside userController
+    2.  The method will perform the following
+        - creates the new data that the user wish to update with
+
+```
+   const newUserData = {
+  name: req.body.name,
+  email: req.body.email,
+};
+```
+
+     3.  Then we search and update a user with id using a special method "findByIdAndUpdate", from mongoose.
+    - The method takes three parameters,The user id which we want to change, the new data and other settings.
+    4.  Finally create a route for It then done.
+
+# Delete current user
+
+If the user wants to delete its account we use the ff method
+
+    Steps:
+    1.  Create a method called deleteUser, in userControll
+    2.  Use a special method "findByIdAndDelete" from mongoose, this method will search a user by id and delete it from db.
+    3.  To complete the delete process we have to do also
+        - change the token value to none
+        - Token Expire time to be immediatley
+        - httpOnly: true,
+    4.  That is all
+
+# Apply to Job with Resume

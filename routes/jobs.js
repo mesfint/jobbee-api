@@ -10,6 +10,7 @@ const {
   deleteJob,
   getJob,
   jobStats,
+  applyJob,
 } = require("../controllers/jobs");
 
 const { isAuthenticatedUser, authorizeRoles } = require("../middlewares/auth");
@@ -20,6 +21,10 @@ router.route("/jobs").get(getJobs);
 router.route("/jobs/:zipcode/:distance").get(getJobsInRadius);
 router.route("/job/:id/:slug").get(getJob);
 router.route("/stats/:topic").get(jobStats);
+
+router
+  .route("/job/:id/apply")
+  .put(isAuthenticatedUser, authorizeRoles("user"), applyJob); //Only user can apply a job
 
 //Only the employers can create a job
 router

@@ -3,7 +3,7 @@ const app = express();
 
 const dotenv = require("dotenv");
 const cookieParser = require("cookie-parser");
-//const fileUpload = require("express-fileupload");
+const fileUpload = require("express-fileupload");
 //const rateLimit = require("express-rate-limit");
 //const helmet = require("helmet");
 //const mongoSanitize = require("express-mongo-sanitize");
@@ -44,7 +44,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 // Handle file uploads
-// app.use(fileUpload());
+app.use(fileUpload());
 
 // Sanitize data
 //app.use(mongoSanitize());
