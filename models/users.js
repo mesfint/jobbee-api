@@ -35,7 +35,12 @@ const userSchema = new mongoose.Schema({
   },
   resetPasswordToken: String,
   resetPasswordExpire: Date,
-});
+},
+{
+toJSON : {virtuals : true } ,
+toObject : { virtuals : true}  
+}
+);
 //Encrypting passwords before saving
 
 userSchema.pre("save", async function (next) {
@@ -75,5 +80,13 @@ userSchema.methods.getResetPasswordToken = function () {
 
   return resetToken; //We are returning the token itself, so we send this to the email
 };
+//Show all jobs created by a user virtuals
+
+ userSchema.virtual("jobPublished",{
+  ref: "Job",
+  localField: "_id",
+  foreignField: "user",
+  justOne: false 
+ })
 
 module.exports = mongoose.model("User", userSchema);

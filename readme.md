@@ -607,3 +607,86 @@ If the user wants to delete its account we use the ff method
     4.  That is all
 
 # Apply to Job with Resume
+In this app only the "user" has the right to apply for the job, employers and admins are can't apply.
+
+      Steps:
+1.  As usual we create a jobController method called "applyJob".This method will perform the following:
+  - First wrap the entire method inside catchAsyncErrors method.
+  - Then , first   Search the job by Id, this job is the one being in applied, this search is also  based on applicantsApplied, this is from the jobs model.
+  -   Check that if job last date has been passed or not, the last date is to apply to a job is 7days from date of published.
+  -   Check if user has applied before, A user can be apply only once.
+  - Check files, to make sure that the attached files/resume are there
+  -  Check file type, only doc or pdf files are uploaded.
+  -   Check doucument size, max doc size is 2mb
+  -  Renaming resume, file name is renamed to user name and user id
+
+
+2.   Store the file using express file uploads
+    - Move the created file to public/uploads
+    - Update, database using $push
+    
+```
+- The $push
+ operator appends a specified value to an array.
+
+- The $push
+ operator has the form:
+
+{ $push: { <field1>: <value1>, ... } }
+```
+- Using $push Update the database by adding 
+```
+ $push: {
+      //applicantsApplied => is coming from jobs model
+
+          applicantsApplied: {
+            id: req.user.id,
+            resume: file.name,
+          },
+        },
+```
+- applicantsApplied is an element from jobs model,  Its an arraythen, 
+- check db  of the job that is being applied by the user, should have a user ID and resume being updated inside applicantsApplied
+
+# Display Virtual Property
+
+### In Mongoose, a virtual is a property that is not stored in MongoDB. Virtuals are typically used for computed properties on documents.
+
+### This method is to show all the jobpublished by this user
+
+   Steps
+
+   - First inside user model create the following code.
+```
+ userSchema.virtual("jobPublished",{
+  ref: "Job",
+  localField: "_id",
+  foreignField: "user",
+  justOne: false 
+ })
+
+```
+- We  initialize the virtual property
+- Then add the following into the user model
+```
+{
+toJSON : {virtuals : true } ,
+toObject : { virtuals : true}  
+}
+
+```
+
+##  Display title and postingDate from virtuals
+- Once the above setting is done next we need to populate the user profile to show titles
+and postingDate with other basic data
+- Inside  userControll under getUserprofile method add this populate method
+```
+ .populate({
+    path: "jobPublished",
+    select: "title postingDate"
+  })
+```
+
+###  Testing the virtuals data
+- Go to Postman, user get userprofile endpoint make a request
+- You should find the new data under JobPublished

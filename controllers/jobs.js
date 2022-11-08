@@ -187,7 +187,7 @@ exports.applyJob = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler("Job not found.", 404));
   }
 
-  // Check that if job last date has been passed or not
+        // Check that if job last date has been passed or not
   if (job.lastDate < new Date(Date.now())) {
     return next(
       new ErrorHandler("You can not apply to this job. Date is over.", 400)
