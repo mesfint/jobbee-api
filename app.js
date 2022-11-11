@@ -4,12 +4,12 @@ const app = express();
 const dotenv = require("dotenv");
 const cookieParser = require("cookie-parser");
 const fileUpload = require("express-fileupload");
-//const rateLimit = require("express-rate-limit");
-//const helmet = require("helmet");
-//const mongoSanitize = require("express-mongo-sanitize");
-//const xssClean = require("xss-clean");
-//const hpp = require("hpp");
-//const cors = require("cors");
+const rateLimit = require("express-rate-limit");
+const helmet = require("helmet");
+const mongoSanitize = require("express-mongo-sanitize");
+const xssClean = require("xss-clean");
+const hpp = require("hpp");
+const cors = require("cors");
 const bodyParser = require("body-parser");
 
 const connectDatabase = require("./config/database");
@@ -34,8 +34,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(express.static("public"));
 
-// Setup security headers
-//app.use(helmet());
+// Setup security headers, Put it on top
+app.use(helmet());
 
 // Setup body parser
 app.use(express.json());
@@ -47,28 +47,28 @@ app.use(cookieParser());
 app.use(fileUpload());
 
 // Sanitize data
-//app.use(mongoSanitize());
+app.use(mongoSanitize());
 
 // Prevent XSS attacks
-//app.use(xssClean());
+app.use(xssClean());
 
 // Prevent Parameter Pollution
-/*app.use(
+app.use(
   hpp({
-    whitelist: ["positions"],
+    whitelist: [""], //we add this if we want to exclude a feild from the result,otherwise it will display all
   })
-);*/
+);
 
 // Rate Limiting
-/*const limiter = rateLimit({
+const limiter = rateLimit({
   windowMs: 10 * 60 * 1000, //10 Mints
-  max: 100,
-});*/
+  max: 100, //100 requests per 10min
+});
 
 // Setup CORS - Accessible by other domains
-//app.use(cors());
+app.use(cors());
 
-//app.use(limiter);
+app.use(limiter);
 
 // Importing all routes
 const jobs = require("./routes/jobs");

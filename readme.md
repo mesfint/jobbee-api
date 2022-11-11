@@ -176,6 +176,10 @@
 
 -If the q is "java-developer" we removed the dash in b/n then become, "java developer"
 
+#### Sort by jobs type {{DOMAIN}}/api/v1/jobs?sort=jobType
+
+This will return the jobsType based on their alphabetical order, so that Internships come first then permannet follows
+
 ## Pagination
 
 - If we want to show only specific number of pages for some search result we use pagination, like 10 results
@@ -607,24 +611,27 @@ If the user wants to delete its account we use the ff method
     4.  That is all
 
 # Apply to Job with Resume
+
 In this app only the "user" has the right to apply for the job, employers and admins are can't apply.
 
       Steps:
+
 1.  As usual we create a jobController method called "applyJob".This method will perform the following:
-  - First wrap the entire method inside catchAsyncErrors method.
-  - Then , first   Search the job by Id, this job is the one being in applied, this search is also  based on applicantsApplied, this is from the jobs model.
-  -   Check that if job last date has been passed or not, the last date is to apply to a job is 7days from date of published.
-  -   Check if user has applied before, A user can be apply only once.
-  - Check files, to make sure that the attached files/resume are there
-  -  Check file type, only doc or pdf files are uploaded.
-  -   Check doucument size, max doc size is 2mb
-  -  Renaming resume, file name is renamed to user name and user id
 
+- First wrap the entire method inside catchAsyncErrors method.
+- Then , first Search the job by Id, this job is the one being in applied, this search is also based on applicantsApplied, this is from the jobs model.
+- Check that if job last date has been passed or not, the last date is to apply to a job is 7days from date of published.
+- Check if user has applied before, A user can be apply only once.
+- Check files, to make sure that the attached files/resume are there
+- Check file type, only doc or pdf files are uploaded.
+- Check doucument size, max doc size is 2mb
+- Renaming resume, file name is renamed to user name and user id
 
-2.   Store the file using express file uploads
+2.  Store the file using express file uploads
+
     - Move the created file to public/uploads
     - Update, database using $push
-    
+
 ```
 - The $push
  operator appends a specified value to an array.
@@ -634,7 +641,9 @@ In this app only the "user" has the right to apply for the job, employers and ad
 
 { $push: { <field1>: <value1>, ... } }
 ```
-- Using $push Update the database by adding 
+
+- Using $push Update the database by adding
+
 ```
  $push: {
       //applicantsApplied => is coming from jobs model
@@ -645,8 +654,9 @@ In this app only the "user" has the right to apply for the job, employers and ad
           },
         },
 ```
-- applicantsApplied is an element from jobs model,  Its an arraythen, 
-- check db  of the job that is being applied by the user, should have a user ID and resume being updated inside applicantsApplied
+
+- applicantsApplied is an element from jobs model, Its an arraythen,
+- check db of the job that is being applied by the user, should have a user ID and resume being updated inside applicantsApplied
 
 # Display Virtual Property
 
@@ -654,32 +664,37 @@ In this app only the "user" has the right to apply for the job, employers and ad
 
 ### This method is to show all the jobpublished by this user
 
-   Steps
+Steps
 
-   - First inside user model create the following code.
+- First inside user model create the following code.
+
 ```
  userSchema.virtual("jobPublished",{
   ref: "Job",
   localField: "_id",
   foreignField: "user",
-  justOne: false 
+  justOne: false
  })
 
 ```
-- We  initialize the virtual property
+
+- We initialize the virtual property
 - Then add the following into the user model
+
 ```
 {
 toJSON : {virtuals : true } ,
-toObject : { virtuals : true}  
+toObject : { virtuals : true}
 }
 
 ```
 
-##  Display title and postingDate from virtuals
+## Display title and postingDate from virtuals
+
 - Once the above setting is done next we need to populate the user profile to show titles
-and postingDate with other basic data
-- Inside  userControll under getUserprofile method add this populate method
+  and postingDate with other basic data
+- Inside userControll under getUserprofile method add this populate method
+
 ```
  .populate({
     path: "jobPublished",
@@ -687,6 +702,338 @@ and postingDate with other basic data
   })
 ```
 
-###  Testing the virtuals data
+### Testing the virtuals data
+
+- Make sure before testing that the employer has created jobs by himself, otherwise you get
+  empty array
 - Go to Postman, user get userprofile endpoint make a request
 - You should find the new data under JobPublished
+
+# Delete user files and employer jobs
+
+- In this section we delete a user that applied to a specific job, also delete the resume that is uploded by that same applier user.
+- We also delete the employer and its asscociated jobs posted
+
+      Steps:
+
+1. First create a function called deleteUserData(role, user)
+
+- In this function we check the role of the users in this app,
+
+  - If the role is employer,
+
+  then use deleteMany mongoose method which deletes all the jobs associated with that employer.
+
+  - If the role is user
+
+    First we find all the jobs that the user applied which will be an array object, (applicantsApplied).
+
+    - Loop over the applicantsApplied array and find the object(id of the job being applied and resume)
+    - Then go through the file path where the actual resume is found.Then replace the controller with nothing.
+    - At the end using splice method and remove the object id of that specific resume
+    - Finally save
+
+  2. Implement the function by calling it inside userDelete method inside userController
+
+  ```
+     deleteUserData(req.user.id, req.user.role);
+
+  ```
+
+## Show all jobs applied by a user
+
+In this section we will work on getting the jobs that a user applied
+
+    Steps
+
+1. Create a function getAppliedJobs inside userController
+
+- In this function first we search all the jobs that the user has applied
+- Then we create a route for this controller
+
+```
+router.route("/jobs/applied").get(isAuthenticatedUser, getAppliedJobs);
+
+```
+
+2. Testing to see a user applictions
+
+   Go to Postman, make sure u logged in as a user, then make a request /api/v1/jobs/applied
+   There shoul be a list of jobs the specific user has applied
+
+## Show all jobs posted by employer or admin
+
+- Only employer/admin can publish jobs, so that we can display jobs published only by this group of people
+
+      Steps
+
+1.  Create a controller getPublishedJobs, in userController
+    - In this function we search jobs that has user id
+2.  Once the controller is created, then create a route in users route like below
+
+```
+  router.route("/jobs/published").get(
+  isAuthenticatedUser,
+  authorizeRoles("employer", "admin"),
+  getPublishedJobs
+);
+
+
+```
+
+- Only "Employer and admin has the authorize role to perform this role"
+
+## Admins role
+
+    - Admins can display all users and employers
+    - Can delete all users/employers,
+    - These are the only routes where admin can access
+
+Steps
+
+    1.   Create a controller getUsers, in userController
+           - In this function we used an apiFilter method from utilil folder
+           - we do all query search of users and then return data
+    2.  Once the controller is created, then create a route in users route
+        -Only the admin can access this route
+
+## Deleting users by Admins
+
+- In this section we create a method called deleteUserByAdmin, this nethod will delete other users such as, user, employer by only admin.
+
+      Steps
+
+  - First we find the user by id
+  - If we found the user by Id then we remove it from db, also using deleteUserData method to remove the role and the user.
+  - Then create a route for this controller
+
+  ```
+    router.route("/user/:id")
+  .delete(isAuthenticatedUser, authorizeRoles("admin"), deleteUserByAdmin);
+
+  ```
+
+- Please note that only the admin has the authorize role to perfome this featre
+
+# Only the user who published can update the job
+
+- Every loggedIn person can't update somebody's job
+
+      Step
+
+  - in Jobs controller we have the ff code
+
+  ```
+    if (job.user.toString() !== req.user.id && req.user.role !== "admin") {
+    return next(
+      new ErrorHandler(
+        `User(${req.user.id}) is not allowed to update this job.`
+      )
+    );
+  }
+
+
+  ```
+
+  - if the user and the current loggedIn user also do not have admin role, then this user doesn't have access right to update this job
+
+  - We also added the same code in the delete job section
+
+# Security Features
+
+## 1. Express Rate Limit
+
+Basic rate-limiting middleware for Express. Use to limit repeated requests to public APIs and/or endpoints such as password reset.
+
+    Steps
+
+1. In app.js install and use express-rate-limit package
+   and then add this
+
+```// Rate Limiting
+const limiter = rateLimit({
+  windowMs: 10 * 60 * 1000, //10 Mints
+  max: 100, //100 requests per 10min
+});
+
+```
+
+- This permits only for 100 requests in 10 minutes
+
+### Testing
+
+Asumme we have max limit is 2, meaning only two requests in 10min
+
+If you make 2 or more request you get the error
+
+```
+'Too many requests, please try again later.'
+
+```
+
+![alt text](rate-limit.png)
+
+## 2. Setting Secuirity Http Headers
+
+Helmet helps you secure your Express apps by setting various HTTP headers. It's not a silver bullet, but it can help!
+
+- Installl it and configure it in app.js
+
+![alt text](security-headers.png)
+
+- These are all security headers
+
+## 3. Data Sanitization
+
+- If you try to login with the following info.
+
+```
+  {
+  "email":{"$gt" : ""},
+   "password":"123mesfin"
+}
+
+```
+
+You still will logIn, There for its a bug, so we ned to fix
+
+## Express Mongoose Sanitize
+
+- Express 4.x middleware which sanitizes user-supplied data to prevent MongoDB Operator Injection.
+
+- This module searches for any keys in objects that begin with a $ sign or contain a ., from req.body, req.query or req.params. It can then either:
+
+completely remove these keys and associated data from the object, or
+replace the prohibited characters with another allowed character.
+
+- Install the package
+- do the configuration and in app.js then try the same code above in postman, you should get
+  "castError"
+- Middleware to sanitize user input
+- Node.js Connect middleware to sanitize user input coming from POST body, GET queries, and url params. Works with Express, Restify, or any other Connect app.
+
+-It generally makes the injected script useless. lets see example below
+
+- In Postman, use post a new job endpoint and change the title value to this
+
+```
+
+ "title":"<script>1+5</script>",
+
+```
+
+- The response is like this
+
+```
+  "title": "&lt;script>1+5&lt;/script>",
+
+```
+
+- It makes the script useless, This is to prevent to send any html data or scripts. to fetch data
+
+# Prevent Parameter Pollution
+
+HTTP Parameter Pollution or HPP in short is a vulnerability that occurs due to passing of multiple parameters having same name.
+
+https://levelup.gitconnected.com/prevent-parameter-pollution-in-node-js-f0794b4650d2
+
+E.g {{DOMAIN}}/api/v1/jobs?sort=jobType&sort=salary
+In the above request we are tying to sort twice which polutes our request.
+And get this type of error
+
+"errMessage": "this.queryStr.sort.split is not a function",
+
+### - HPP => Express middleware to protect against HTTP Parameter Pollution attacks
+
+if you Install HPP and apply it in the app.js, and if you do the above request once again
+
+Its sorting based on salary and jobType which is exactly as it intended
+
+- Another example using "whitelist" in hpp, If we have a certain feild in the whitelist object, then It will Include it in the hpp
+
+- Try this request with position in hpp and without
+  make sure you have updated one of the job position to 10 to get the result
+  {{DOMAIN}}/api/v1/jobs?positions=2&positions=10
+
+# Enabling CORS (cross-Origin Resource Sharing)
+
+CORS is a node.js package for providing a Connect/Express middleware that can be used to enable CORS with various options.
+
+# Documentation API
+
+![alt text](doc.png)
+
+Using Postman we can easily do the API documentaion
+
+1. select Environment, Then select the API and from three dots(...) duplicate
+2. uplicate and rename the API
+3. Make sure to change the domain to the new host such as heroku, https://jobbe.com
+
+---
+
+NB. There are two environments at the moment, If you selct jobbe envi, the envi is localhost.
+
+- If you select Jobbe production the env is jobbee.com
+
+![alt text](envi.png)
+
+---
+
+### Publish 1
+
+![alt text](publish1.png)
+
+---
+
+### Publish 2
+
+The publish button will pop up a new window with some more instruction before we publish the API
+
+1. Current Leave as it is
+2. Select the proper environment
+3. Finally publish, check the final link below
+
+![alt text](final-published.png)
+
+---
+
+## Final Published API
+
+https://documenter.getpostman.com/view/17440245/2s8YeoQtd8
+
+### Other API publishing tools
+
+https://github.com/thedevsaddam/docgen
+
+Using docgen
+
+1. Follow the steps to install the docgen based on the link above
+
+2. Export the Api from postman to ur local machine
+
+   - Make sure you select your Collection => Export => Export
+   - Give proper name for the json file and save it in a place where u want.
+
+3. Run the following script On Terminal
+
+   - Remember you have to be in the right folder on your terminal
+
+````
+docgen server -f jobbee.postman_collection.json -p 8000
+
+
+  ```
+  - You can use any port as long as you are not using the same port where you are running your app.
+````
+
+Then Go to http://localhost:8000/
+
+![alt text](docgen.png)
+
+- To generate HTML file
+
+```
+
+docgen build -i jobbee.postman_collection.json -o jobbee.html
+
+```
