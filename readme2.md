@@ -1073,3 +1073,74 @@ to
    - You should see the Api html on the browser
 
 4. Connect with online mongodb
+
+5. Deploy to Heroku
+
+   ```
+   heroku login  => in your terminal/vscode
+
+   Press any key to open up the browser to login or q to exit:
+
+   A new browser window popup
+
+   Authenticate heroku from your phone
+
+   Logging in... done
+
+
+   ```
+
+   ***
+
+   ```
+     - heroku create =>  to create a new app
+
+           Logging in... done  => with random app name
+
+     - git push heroku master => push your app to heroku
+
+            Wait till  it finishes deploying
+
+            Verifying deploy... done.
+
+      - Go to heroku dash board to see the new app
+
+          https://dashboard.heroku.com/apps
+
+      - click on the new app created then click on settings to change name
+
+      -You might have error, to fix need to add config.env manually
+
+
+   ```
+
+   ***
+
+### Fix heroku variables error
+
+    - Click reveal config vars
+    - Add every variables key/pairs from your config.env
+    - Finally click on Open App => the app should open successfully
+
+    Finally deployed on heroku
+
+https://jobbee-api-mes.herokuapp.com/
+
+---
+
+### Testing
+
+![alt text](heroku-post1.png)
+
+also
+![alt text](heroku-post2.png)
+
+### Testing with Deployed API on our local Postman
+
+Test to get all jobs like this
+
+https://jobbee-api-mes.herokuapp.com/api/v1/jobs
+
+User similar path for all requests
+
+![alt text](heroku-post3.png)
